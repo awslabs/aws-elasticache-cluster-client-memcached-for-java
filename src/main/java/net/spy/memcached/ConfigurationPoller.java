@@ -18,7 +18,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.compat.SpyThread;
@@ -57,14 +59,23 @@ public class ConfigurationPoller extends SpyThread{
   
   //The executor is used to keep the task and it's execution independent. The scheduled thread polls takes care of 
   //the periodic polling.
-  private ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(1);
+  private ScheduledThreadPoolExecutor scheduledExecutor;
   
   public ConfigurationPoller(final MemcachedClient client){
-    this(client, DEFAULT_POLL_INTERVAL);
+    this(client, DEFAULT_POLL_INTERVAL, false);
   }
   
-  public ConfigurationPoller(final MemcachedClient client, long pollingInterval){
+  public ConfigurationPoller(final MemcachedClient client, long pollingInterval, final boolean useDaemonThreads){
     this.client = client;
+    this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+		@Override
+		public Thread newThread(Runnable runnable) {
+			Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+			thread.setDaemon(useDaemonThreads);
+			return thread;
+		}
+	});
+    setDaemon(useDaemonThreads);
     
     //The explicit typed emptyList assignment avoids type warning.
     List<NodeEndPoint> emptyList = Collections.emptyList();

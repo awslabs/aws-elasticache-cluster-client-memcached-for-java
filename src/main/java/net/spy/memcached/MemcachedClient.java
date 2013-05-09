@@ -328,7 +328,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     }
     
     //Initialize and start the poller.
-    configPoller = new ConfigurationPoller(this, cf.getDynamicModePollingInterval());
+    configPoller = new ConfigurationPoller(this, cf.getDynamicModePollingInterval(), cf.isDaemon());
     configPoller.subscribeForClusterConfiguration(mconn);
   }
 
