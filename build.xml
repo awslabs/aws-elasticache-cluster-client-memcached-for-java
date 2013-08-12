@@ -495,7 +495,7 @@
   <target name="mvn-install" depends="jar,srcjar,package,mvn-prep"
       description="Install Spymemcached in local m2 repository">
     <!-- @todo: change to use ivy publish -->
-    <artifact:pom id="spymemcached" file="${spymemcached.pom}" />
+    <artifact:pom id="${name}" file="${spymemcached.pom}" />
     <artifact:install file="${build.dir}/jars/${name}-${version}.jar">
       <pom refid="${name}" />
       <attach file="${build.dir}/sources/${name}-${version}.jar"
@@ -503,7 +503,7 @@
       <attach file="${build.dir}/javadocs/${name}-${version}.jar"
           classifier="javadocs" />
     </artifact:install>
-    <artifact:pom id="spymemcached-test" file="${spymemcached-test.pom}" />
+    <artifact:pom id="${name}-test" file="${spymemcached-test.pom}" />
       <artifact:install file="${build.dir}/jars/${name}-test-${version}.jar">
         <pom refid="${name}-test" />
         <attach file="${build.dir}/sources/${name}-test-${version}.jar"
