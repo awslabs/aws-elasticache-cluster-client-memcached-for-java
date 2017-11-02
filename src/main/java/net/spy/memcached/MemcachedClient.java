@@ -2131,18 +2131,20 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public Map<SocketAddress, Map<String, String>> getStats(final String arg) {
     final Map<SocketAddress, Map<String, String>> rv =
-        new HashMap<SocketAddress, Map<String, String>>();
+        new ConcurrentHashMap<SocketAddress, Map<String, String>>();
 
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
       @Override
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
         final SocketAddress sa = n.getSocketAddress();
-        rv.put(sa, new HashMap<String, String>());
+        rv.put(sa, new HashMap<String, String>(0));
         return opFact.stats(arg, new StatsOperation.Callback() {
+          private final Map<String,String> data =
+              new HashMap<String,String>();
           @Override
           public void gotStat(String name, String val) {
-            rv.get(sa).put(name, val);
+            data.put(name, val);
           }
 
           @Override
@@ -2150,6 +2152,9 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
           public void receivedStatus(OperationStatus status) {
             if (!status.isSuccess()) {
               getLogger().warn("Unsuccessful stat fetch: %s", status);
+            }
+            else {
+              rv.put(sa, data);
             }
           }
 
