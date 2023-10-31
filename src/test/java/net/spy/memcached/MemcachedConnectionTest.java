@@ -73,4 +73,10 @@ public class MemcachedConnectionTest extends TestCase {
     assertTrue(conn.belongsToCluster(node));
     assertFalse(conn.belongsToCluster(node2));
   }
+  public void testDefaultClientMode() throws Exception {
+    ConnectionFactory factory = new DefaultConnectionFactory();
+    assert factory.getClientMode() == ClientMode.Unset;
+    MemcachedClient client = new MemcachedClient(factory, AddrUtil.getAddresses(UnitTestConfig.IPV4_ADDR + ":11211"));
+    assert client.clientMode == ClientMode.Static;
+  }
 }
