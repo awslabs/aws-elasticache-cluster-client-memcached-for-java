@@ -706,6 +706,17 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   }
 
   @Test
+  public void testGetAndTouch() throws Exception {
+    assertNull(client.get("gattest"));
+    assertNull(client.get("nonexistent"));
+    assertTrue(client.set("gattest", 5, "value1").get());
+    assertTrue(client.set("gattest2", 10, "value2").get());
+    assertEquals("value1", client.getAndTouch("gattest", 2).getValue());
+    assertEquals("value2", client.getAndTouch("gattest2", 20).getValue());
+    assertNull(client.getAndTouch("nonexistent", 2));
+  }
+
+  @Test
   public void testGracefulShutdown() throws Exception {
     for (int i = 0; i < 1000; i++) {
       client.set("t" + i, 10, i);

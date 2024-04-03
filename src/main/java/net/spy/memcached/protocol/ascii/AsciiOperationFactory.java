@@ -92,8 +92,12 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 
   public GetAndTouchOperation getAndTouch(String key, int expiration,
       GetAndTouchOperation.Callback cb) {
-    throw new UnsupportedOperationException("Get and touch is not supported "
-        + "for ASCII protocol");
+    return new GetAndTouchOperationImpl(key, expiration, cb);
+  }
+
+  public GetAndTouchOperation getAndTouch(Collection<String> keys, int expiration,
+                                          GetAndTouchOperation.Callback cb) {
+    return new GetAndTouchOperationImpl(keys, expiration, cb);
   }
 
   public GetOperation get(String key, GetOperation.Callback cb) {

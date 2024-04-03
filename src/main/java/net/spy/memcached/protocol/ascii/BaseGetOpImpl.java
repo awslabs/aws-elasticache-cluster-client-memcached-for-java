@@ -50,6 +50,7 @@ public abstract class BaseGetOpImpl extends OperationImpl {
   private static final OperationStatus LOCK_ERROR = new OperationStatus(false,
       "LOCK_ERROR", StatusCode.ERR_TEMP_FAIL);
   private static final byte[] RN_BYTES = "\r\n".getBytes();
+  private static final byte[] EMPTY_BYTES = new byte[0];
   private final String cmd;
   private final Collection<String> keys;
   private String currentKey = null;
@@ -77,6 +78,15 @@ public abstract class BaseGetOpImpl extends OperationImpl {
     keys = Collections.singleton(k);
     exp = e;
     expBytes = String.valueOf(e).getBytes();
+    hasValue = false;
+  }
+
+  public BaseGetOpImpl(String c, int e, OperationCallback cb, Collection<String> k) {
+    super(cb);
+    cmd = c;
+    keys = k;
+    exp = e;
+    expBytes = null;
     hasValue = false;
   }
 
@@ -200,9 +210,11 @@ public abstract class BaseGetOpImpl extends OperationImpl {
       size += k.length;
       size++;
     }
-    size += afterKeyBytesSize();
+    byte[] beforeKeyBytes = beforeKeyBytes();
+    size += beforeKeyBytes.length + afterKeyBytesSize();
     ByteBuffer b = ByteBuffer.allocate(size);
     b.put(cmd.getBytes());
+    b.put(beforeKeyBytes);
     for (byte[] k : keyBytes) {
       b.put((byte) ' ');
       b.put(k);
@@ -212,6 +224,8 @@ public abstract class BaseGetOpImpl extends OperationImpl {
     b.flip();
     setBuffer(b);
   }
+
+  protected byte[] beforeKeyBytes() { return EMPTY_BYTES; }
 
   protected int afterKeyBytesSize() {
     if (expBytes == null) {
