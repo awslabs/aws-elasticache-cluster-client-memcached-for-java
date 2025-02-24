@@ -60,6 +60,23 @@ To create the TLS mode client with customized TLS certificate, initialize the SS
 
 The rest of the logic to create the client follows.
 
+#### Troubleshooting TLS Connection Issues
+##### Verify TLS Configuration Using OpenSSL
+Test TLS connection using OpenSSL command: `openssl s_client -connect <host>:<port>`, Check for:
+* Successful handshake
+* Valid certificate chain
+* Certificate expiration dates
+* Correct hostname matching
+##### Dependency Management
+Review project dependencies for conflicts:
+* Ensure `elasticache-java-cluster-client` is the primary memcached client
+* Remove or exclude conflicting clients (e.g., spymemcached)
+* Check Maven/Gradle dependency tree for transitive dependencies
+##### Network Connectivity
+* Check network connectivity between client and cluster
+* Verify DNS resolution for cluster endpoints
+* Confirm no firewall rules blocking TLS traffic
+
 # Testing
 
 The latest version of Amazon ElastiCache Cluster Client supports unit tests and integration tests.
