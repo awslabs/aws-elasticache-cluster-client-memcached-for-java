@@ -74,7 +74,7 @@ public class NodeEndPoint {
   }
   
   public InetSocketAddress getInetSocketAddress(boolean reresolve){
-    if(reresolve == true || ipAddress == null || ipAddress.trim().equals("")){
+    if(reresolve || ipAddress == null || ipAddress.trim().equals("")){
       return new InetSocketAddress(hostName, port);
     } else {
       try {
@@ -94,12 +94,9 @@ public class NodeEndPoint {
   
   @Override
   public String toString(){
-    StringBuilder buffer = new StringBuilder("NodeEndPoint - ");
-    buffer.append("HostName:" + hostName);
-    buffer.append(" IpAddress:" + ipAddress);
-    buffer.append(" Port:" + port);
-    
-    return buffer.toString();
+    return "NodeEndPoint - " + "HostName:" + hostName +
+        " IpAddress:" + ipAddress +
+        " Port:" + port;
   }
 
 }
