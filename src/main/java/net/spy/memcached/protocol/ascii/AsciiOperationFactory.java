@@ -67,6 +67,7 @@ import net.spy.memcached.tapmessage.RequestMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
 
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.sasl.SaslClient;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -196,20 +197,20 @@ public class AsciiOperationFactory extends BaseOperationFactory {
     return rv;
   }
 
+  @Override
   public SASLMechsOperation saslMechs(OperationCallback cb) {
     throw new UnsupportedOperationException("SASL is not supported for "
         + "ASCII protocol");
   }
 
-  public SASLStepOperation saslStep(String[] mech, byte[] challenge,
-      String serverName, Map<String, ?> props, CallbackHandler cbh,
-      OperationCallback cb) {
+  @Override
+  public SASLStepOperation saslStep(SaslClient sc, byte[] challenge, OperationCallback cb) {
     throw new UnsupportedOperationException("SASL is not supported for "
         + "ASCII protocol");
   }
 
-  public SASLAuthOperation saslAuth(String[] mech, String serverName,
-      Map<String, ?> props, CallbackHandler cbh, OperationCallback cb) {
+  @Override
+  public SASLAuthOperation saslAuth(SaslClient sc, OperationCallback cb) {
     throw new UnsupportedOperationException("SASL is not supported for "
         + "ASCII protocol");
   }

@@ -88,7 +88,7 @@ public class BinaryToStringTest extends TestCase {
   }
 
   public void testSASLAuth() {
-    (new SASLAuthOperationImpl(null, null, null, null, null)).toString();
+    (new SASLAuthOperationImpl(null, null)).toString();
   }
 
   public void testSASLMechs() {
@@ -96,7 +96,7 @@ public class BinaryToStringTest extends TestCase {
   }
 
   public void testSASLStep() {
-    (new SASLStepOperationImpl(null, null, null, null, null, null)).toString();
+    (new SASLStepOperationImpl(null, null, null)).toString();
   }
 
   public void testStats() {
