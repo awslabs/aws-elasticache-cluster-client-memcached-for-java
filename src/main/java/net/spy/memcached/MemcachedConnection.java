@@ -1419,6 +1419,9 @@ public class MemcachedConnection extends SpyThread implements ClusterConfigurati
       } catch (SocketException e) {
         getLogger().warn("Error on reconnect", e);
         rereQueue.add(node);
+      } catch (UnresolvedAddressException e) {
+        getLogger().warn("Unresolved Address error on reconnect", e);
+        rereQueue.add(node);
       } catch (Exception e) {
         getLogger().error("Exception on reconnect, lost node %s", node, e);
       } finally {
