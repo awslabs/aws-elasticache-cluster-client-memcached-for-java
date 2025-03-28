@@ -38,6 +38,10 @@ import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 
+import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslClient;
+import javax.security.sasl.SaslException;
+
 /**
  * A thread that does SASL authentication.
  */
@@ -149,6 +153,17 @@ public class AuthThread extends SpyThread {
       throw new IllegalStateException("Got empty SASL auth mech list.");
     }
 
+    String serverName = authDescriptor.getServerName();
+    if (serverName == null) {
+      serverName = node.getSocketAddress().toString();
+    }
+    SaslClient saslClient;
+    try {
+      saslClient = Sasl.createSaslClient(supportedMechs, null, "memcached", serverName, authDescriptor.getProperties(), authDescriptor.getCallback());
+    } catch (SaslException e) {
+      throw new RuntimeException("Error initializing SASL client", e);
+    }
+
     OperationStatus priorStatus = null;
     while (!done.get()) {
       long stepStart = System.nanoTime();
@@ -177,7 +192,7 @@ public class AuthThread extends SpyThread {
       };
 
       // Get the prior status to create the correct operation.
-      final Operation op = buildOperation(priorStatus, cb, supportedMechs);
+      final Operation op = buildOperation(priorStatus, cb, saslClient);
       conn.insertOperation(node, op);
 
       try {
@@ -200,7 +215,7 @@ public class AuthThread extends SpyThread {
         long stepDiff = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()
           - stepStart);
         msg = String.format("SASL Step took %dms on %s",
-          stepDiff, node.toString());
+          stepDiff, node);
         level = mechsDiff
           >= AUTH_ROUNDTRIP_THRESHOLD ? Level.WARN : Level.DEBUG;
         getLogger().log(level, msg);
@@ -216,24 +231,24 @@ public class AuthThread extends SpyThread {
       }
     }
 
+    try {
+      saslClient.dispose();
+    } catch (SaslException e) {
+      throw new RuntimeException("Error while disposing SASL", e);
+    }
+
     long totalDiff = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()
       - totalStart);
-    msg = String.format("SASL Auth took %dms on %s",
-      totalDiff, node.toString());
+    msg = String.format("SASL Auth took %dms on %s", totalDiff, node);
     level = mechsDiff >= AUTH_TOTAL_THRESHOLD ? Level.WARN : Level.DEBUG;
     getLogger().log(level, msg);
   }
 
-  private Operation buildOperation(OperationStatus st, OperationCallback cb,
-    final String [] supportedMechs) {
+  private Operation buildOperation(OperationStatus st, OperationCallback cb, SaslClient sc) {
     if (st == null) {
-      return opFact.saslAuth(supportedMechs,
-          node.getSocketAddress().toString(), null,
-          authDescriptor.getCallback(), cb);
+      return opFact.saslAuth(sc, cb);
     } else {
-      return opFact.saslStep(supportedMechs, KeyUtil.getKeyBytes(
-          st.getMessage()), node.getSocketAddress().toString(), null,
-          authDescriptor.getCallback(), cb);
+      return opFact.saslStep(sc, KeyUtil.getKeyBytes(st.getMessage()), cb);
     }
   }
 }
