@@ -923,8 +923,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted waiting for value", e);
     } catch (ExecutionException e) {
-      if(e.getCause() instanceof CancellationException) {
+      if (e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
+      } else if (e.getCause() instanceof TimeoutException) {
+        throw new OperationTimeoutException("Timeout waiting for value", e);
       } else {
         throw new RuntimeException("Exception waiting for value", e);
       }
@@ -1386,8 +1388,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted waiting for value", e);
     } catch (ExecutionException e) {
-      if(e.getCause() instanceof CancellationException) {
+      if (e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
+      } else if (e.getCause() instanceof TimeoutException) {
+        throw new OperationTimeoutException("Timeout waiting for value", e);
       } else {
         throw new RuntimeException("Exception waiting for value", e);
       }
@@ -1479,8 +1483,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted waiting for value", e);
     } catch (ExecutionException e) {
-      if(e.getCause() instanceof CancellationException) {
+      if (e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
+      } else if (e.getCause() instanceof TimeoutException) {
+          throw new OperationTimeoutException("Timeout waiting for value", e);
       } else {
         throw new RuntimeException("Exception waiting for value", e);
       }
@@ -1807,8 +1813,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted getting bulk values", e);
     } catch (ExecutionException e) {
-      if(e.getCause() instanceof CancellationException) {
+      if (e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
+      } else if (e.getCause() instanceof TimeoutException) {
+        throw new OperationTimeoutException("Timeout waiting for bulk values", e);
       } else {
         throw new RuntimeException("Exception waiting for bulk values", e);
       }
@@ -2389,8 +2397,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       } catch (InterruptedException e) {
         throw new RuntimeException("Interrupted waiting for store", e);
       } catch (ExecutionException e) {
-        if(e.getCause() instanceof CancellationException) {
+        if (e.getCause() instanceof CancellationException) {
           throw (CancellationException) e.getCause();
+        } else if (e.getCause() instanceof TimeoutException) {
+          throw new OperationTimeoutException("Timeout waiting for store", e);
         } else {
           throw new RuntimeException("Failed waiting for store", e);
         }
