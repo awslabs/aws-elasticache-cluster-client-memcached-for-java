@@ -2787,7 +2787,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public OperationFuture<Boolean> flush(final int delay) {
     final AtomicReference<Boolean> flushResult =
-        new AtomicReference<Boolean>(null);
+        new AtomicReference<Boolean>(true);
     final ConcurrentLinkedQueue<Operation> ops =
         new ConcurrentLinkedQueue<Operation>();
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
@@ -2797,7 +2797,9 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         Operation op = opFact.flush(delay, new OperationCallback() {
           @Override
           public void receivedStatus(OperationStatus s) {
-            flushResult.set(s.isSuccess());
+            if (!s.isSuccess()) {
+              flushResult.set(false);
+            }
           }
 
           @Override
