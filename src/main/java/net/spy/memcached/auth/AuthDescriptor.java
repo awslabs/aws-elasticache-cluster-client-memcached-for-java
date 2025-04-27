@@ -24,6 +24,8 @@
 package net.spy.memcached.auth;
 
 import javax.security.auth.callback.CallbackHandler;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Information required to specify authentication mechanisms and callbacks.
@@ -32,6 +34,8 @@ public class AuthDescriptor {
 
   private final String[] mechs;
   private final CallbackHandler cbh;
+  private final Map<String, ?> props;
+  private final String serverName;
   private int authAttempts;
   private int allowedAuthAttempts;
 
@@ -49,12 +53,19 @@ public class AuthDescriptor {
    * should be used instead, passing in new String[] {"PLAIN"} will force
    * the client to use PLAIN.</p>
    *
+   * <p>It is possible to specify an optional server name to be used
+   * in certain digest mechanisms for validation. If unspecified, the server's
+   * socket address is used.</p>
+   *
    * @param m list of mechanisms
    * @param h the callback handler for grabbing credentials and stuff
+   * @param s the server name. Can be null
    */
-  public AuthDescriptor(String[] m, CallbackHandler h) {
+  public AuthDescriptor(String[] m, CallbackHandler h, String s, Map<String, ?> p) {
     mechs = m;
     cbh = h;
+    props = p;
+    serverName = s;
     authAttempts = 0;
     String authThreshhold =
         System.getProperty("net.spy.memcached.auth.AuthThreshold");
@@ -63,6 +74,15 @@ public class AuthDescriptor {
     } else {
       allowedAuthAttempts = -1; // auth forever
     }
+  }
+
+  /**
+   *
+   * @param m list of mechanisms
+   * @param h the callback handler for grabbing credentials and stuff
+   */
+  public AuthDescriptor(String[] m, CallbackHandler h) {
+    this(m, h, null, null);
   }
 
   /**
@@ -96,5 +116,13 @@ public class AuthDescriptor {
 
   public CallbackHandler getCallback() {
     return cbh;
+  }
+
+  public Map<String, ?> getProperties() {
+    return props;
+  }
+
+  public String getServerName() {
+    return serverName;
   }
 }

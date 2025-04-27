@@ -33,13 +33,13 @@ import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.ConfigurationType;
+import net.spy.memcached.ops.DeleteConfigOperation;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetAndTouchOperation;
 import net.spy.memcached.ops.GetConfigOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetOperation.Callback;
-import net.spy.memcached.ops.DeleteConfigOperation;
 import net.spy.memcached.ops.GetlOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
@@ -68,10 +68,9 @@ import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.tapmessage.RequestMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
 
-import javax.security.auth.callback.CallbackHandler;
+import javax.security.sasl.SaslClient;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Factory for binary operations.
@@ -217,20 +216,19 @@ public class BinaryOperationFactory extends BaseOperationFactory {
     return rv;
   }
 
-  public SASLAuthOperation saslAuth(String[] mech, String serverName,
-      Map<String, ?> props, CallbackHandler cbh, OperationCallback cb) {
-    return new SASLAuthOperationImpl(mech, serverName, props, cbh, cb);
+  @Override
+  public SASLAuthOperation saslAuth(SaslClient sc, OperationCallback cb) {
+    return new SASLAuthOperationImpl(sc, cb);
   }
 
+  @Override
   public SASLMechsOperation saslMechs(OperationCallback cb) {
     return new SASLMechsOperationImpl(cb);
   }
 
-  public SASLStepOperation saslStep(String[] mech, byte[] challenge,
-      String serverName, Map<String, ?> props, CallbackHandler cbh,
-      OperationCallback cb) {
-    return new SASLStepOperationImpl(mech, challenge, serverName, props, cbh,
-        cb);
+  @Override
+  public SASLStepOperation saslStep(SaslClient sc, byte[] ch, OperationCallback cb) {
+    return new SASLStepOperationImpl(sc, ch, cb);
   }
 
   public TapOperation tapBackfill(String id, long date, OperationCallback cb) {

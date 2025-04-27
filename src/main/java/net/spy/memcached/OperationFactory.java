@@ -64,6 +64,7 @@ import net.spy.memcached.tapmessage.RequestMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
 
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.sasl.SaslClient;
 import java.util.Collection;
 import java.util.Map;
 
@@ -334,15 +335,12 @@ public interface OperationFactory {
   /**
    * Create a new sasl auth operation.
    */
-  SASLAuthOperation saslAuth(String[] mech, String serverName,
-      Map<String, ?> props, CallbackHandler cbh, OperationCallback cb);
+  SASLAuthOperation saslAuth(SaslClient sc, OperationCallback cb);
 
   /**
    * Create a new sasl step operation.
    */
-  SASLStepOperation saslStep(String[] mech, byte[] challenge,
-      String serverName, Map<String, ?> props, CallbackHandler cbh,
-      OperationCallback cb);
+  SASLStepOperation saslStep(SaslClient sc, byte[] ch, OperationCallback cb);
 
   /**
    * Clone an operation.

@@ -23,14 +23,11 @@
 
 package net.spy.memcached.protocol.binary;
 
-import java.util.Map;
-
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.sasl.SaslClient;
-import javax.security.sasl.SaslException;
-
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.SASLAuthOperation;
+
+import javax.security.sasl.SaslClient;
+import javax.security.sasl.SaslException;
 
 /**
  * SASL authenticator.
@@ -40,15 +37,13 @@ public class SASLAuthOperationImpl extends SASLBaseOperationImpl implements
 
   private static final byte CMD = 0x21;
 
-  public SASLAuthOperationImpl(String[] m, String s, Map<String, ?> p,
-      CallbackHandler h, OperationCallback c) {
-    super(CMD, m, EMPTY_BYTES, s, p, h, c);
+  public SASLAuthOperationImpl(SaslClient sc, OperationCallback c) {
+    super(CMD, sc, EMPTY_BYTES, c);
   }
 
   @Override
-  protected byte[] buildResponse(SaslClient sc) throws SaslException {
-    return sc.hasInitialResponse() ? sc.evaluateChallenge(challenge)
-        : EMPTY_BYTES;
+  protected byte[] buildResponse() throws SaslException {
+    return sc.hasInitialResponse() ? sc.evaluateChallenge(ch) : ch;
   }
 
   @Override
