@@ -219,20 +219,21 @@ public class DefaultConnectionFactory extends SpyObject implements
       int bufSize) {
 
     OperationFactory of = getOperationFactory();
+    boolean doAuth = false;
+    if (getAuthDescriptor() != null) {
+      doAuth = true;
+    }
     if (of instanceof AsciiOperationFactory) {
       return new AsciiMemcachedNodeImpl(sa, c, bufSize,
           createReadOperationQueue(),
           createWriteOperationQueue(),
           createOperationQueue(),
           getOpQueueMaxBlockTime(),
+          doAuth,
           getOperationTimeout(),
           getAuthWaitTime(),
           this);
     } else if (of instanceof BinaryOperationFactory) {
-      boolean doAuth = false;
-      if (getAuthDescriptor() != null) {
-        doAuth = true;
-      }
       return new BinaryMemcachedNodeImpl(sa, c, bufSize,
           createReadOperationQueue(),
           createWriteOperationQueue(),

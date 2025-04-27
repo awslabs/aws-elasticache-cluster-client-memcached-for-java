@@ -32,20 +32,20 @@ import net.spy.memcached.compat.SpyObject;
 /**
  * Authentication functional test.
  */
-public class AuthTest extends SpyObject implements Runnable {
+public class AsciiAuthTest extends SpyObject implements Runnable {
 
   private final String username;
   private final String password;
   private MemcachedClient client;
 
-  public AuthTest(String u, String p) {
+  public AsciiAuthTest(String u, String p) {
     username = u;
     password = p;
   }
 
   public void init() throws Exception {
     client = new MemcachedClient(new ConnectionFactoryBuilder()
-        .setProtocol(Protocol.BINARY)
+        .setProtocol(Protocol.TEXT)
         .setAuthDescriptor(AuthDescriptor.typical(username, password))
         .build(), AddrUtil.getAddresses("localhost:11212"));
   }
@@ -55,17 +55,11 @@ public class AuthTest extends SpyObject implements Runnable {
   }
 
   public void run() {
-    System.out.println("Available mechs:  " + client.listSaslMechanisms());
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
     client.getVersions();
   }
 
   public static void main(String[] a) throws Exception {
-    AuthTest lt = new AuthTest("testuser", "testpass");
+    AsciiAuthTest lt = new AsciiAuthTest("testuser", "testpass");
     lt.init();
     long start = System.currentTimeMillis();
     try {
