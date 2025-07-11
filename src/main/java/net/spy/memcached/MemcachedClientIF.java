@@ -153,6 +153,33 @@ public interface MemcachedClientIF {
 
   Map<String, Object> getBulk(String... keys);
 
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keys,
+      Iterator<Transcoder<T>> tcs);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keys,
+      Iterator<Transcoder<T>> tcs);
+
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keys,
+      Transcoder<T> tc);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keys,
+      Transcoder<T> tc);
+
+  BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Iterator<String> keys);
+  BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Collection<String> keys);
+
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Transcoder<T> tc, String... keys);
+
+  BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(String... keys);
+
+  <T> Map<String, CASValue<T>> getsBulk(Iterator<String> keyIter, Transcoder<T> tc);
+  <T> Map<String, CASValue<T>> getsBulk(Collection<String> keys, Transcoder<T> tc);
+
+  Map<String, CASValue<Object>> getsBulk(Iterator<String> keyIter);
+  Map<String, CASValue<Object>> getsBulk(Collection<String> keys);
+
+  <T> Map<String, CASValue<T>> getsBulk(Transcoder<T> tc, String... keys);
+
+  Map<String, CASValue<Object>> getsBulk(String... keys);
+
   <T> Future<Boolean> touch(final String key, final int exp,
       final Transcoder<T> tc);
 

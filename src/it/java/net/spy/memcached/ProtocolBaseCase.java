@@ -485,6 +485,91 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   }
 
   @Test
+  public void testGetsBulkVararg() throws Exception {
+    assertEquals(0, client.getsBulk("test1", "test2", "test3").size());
+    client.set("test1", 5, "val1");
+    client.set("test2", 5, "val2");
+    Map<String, CASValue<Object>> vals = client.getsBulk("test1", "test2", "test3");
+    assertEquals(2, vals.size());
+    assertEquals("val1", vals.get("test1").getValue());
+    assertEquals("val2", vals.get("test2").getValue());
+    assertTrue(vals.get("test1").getCas() > 0);
+    assertTrue(vals.get("test2").getCas() > 0);
+  }
+
+  @Test
+  public void testGetsBulkVarargWithTranscoder() throws Exception {
+    Transcoder<String> t = new TestTranscoder();
+    assertEquals(0, client.getsBulk(t, "test1", "test2", "test3").size());
+    client.set("test1", 5, "val1", t);
+    client.set("test2", 5, "val2", t);
+    Map<String, CASValue<String>> vals = client.getsBulk(t, "test1", "test2", "test3");
+    assertEquals(2, vals.size());
+    assertEquals("val1", vals.get("test1").getValue());
+    assertEquals("val2", vals.get("test2").getValue());
+    assertTrue(vals.get("test1").getCas() > 0);
+    assertTrue(vals.get("test2").getCas() > 0);
+  }
+
+  @Test
+  public void testGetsBulkCollection() throws Exception {
+    Collection<String> keys = Arrays.asList("test1", "test2", "test3");
+    assertEquals(0, client.getsBulk(keys).size());
+    client.set("test1", 5, "val1");
+    client.set("test2", 5, "val2");
+    Map<String, CASValue<Object>> vals = client.getsBulk(keys);
+    assertEquals(2, vals.size());
+    assertEquals("val1", vals.get("test1").getValue());
+    assertEquals("val2", vals.get("test2").getValue());
+    assertTrue(vals.get("test1").getCas() > 0);
+    assertTrue(vals.get("test2").getCas() > 0);
+  }
+
+  @Test
+  public void testGetsBulkCollectionWithTranscoder() throws Exception {
+    Transcoder<String> t = new TestTranscoder();
+    Collection<String> keys = Arrays.asList("test1", "test2", "test3");
+    assertEquals(0, client.getsBulk(keys, t).size());
+    client.set("test1", 5, "val1", t);
+    client.set("test2", 5, "val2", t);
+    Map<String, CASValue<String>> vals = client.getsBulk(keys, t);
+    assertEquals(2, vals.size());
+    assertEquals("val1", vals.get("test1").getValue());
+    assertEquals("val2", vals.get("test2").getValue());
+    assertTrue(vals.get("test1").getCas() > 0);
+    assertTrue(vals.get("test2").getCas() > 0);
+  }
+
+  @Test
+  public void testGetsBulkIterator() throws Exception {
+    Collection<String> keys = Arrays.asList("test1", "test2", "test3");
+    assertEquals(0, client.getsBulk(keys.iterator()).size());
+    client.set("test1", 5, "val1");
+    client.set("test2", 5, "val2");
+    Map<String, CASValue<Object>> vals = client.getsBulk(keys.iterator());
+    assertEquals(2, vals.size());
+    assertEquals("val1", vals.get("test1").getValue());
+    assertEquals("val2", vals.get("test2").getValue());
+    assertTrue(vals.get("test1").getCas() > 0);
+    assertTrue(vals.get("test2").getCas() > 0);
+  }
+
+  @Test
+  public void testGetsBulkIteratorWithTranscoder() throws Exception {
+    Transcoder<String> t = new TestTranscoder();
+    Collection<String> keys = Arrays.asList("test1", "test2", "test3");
+    assertEquals(0, client.getsBulk(keys.iterator(), t).size());
+    client.set("test1", 5, "val1", t);
+    client.set("test2", 5, "val2", t);
+    Map<String, CASValue<String>> vals = client.getsBulk(keys.iterator(), t);
+    assertEquals(2, vals.size());
+    assertEquals("val1", vals.get("test1").getValue());
+    assertEquals("val2", vals.get("test2").getValue());
+    assertTrue(vals.get("test1").getCas() > 0);
+    assertTrue(vals.get("test2").getCas() > 0);
+  }
+
+  @Test
   public void testGetBulkVarargWithTranscoder() throws Exception {
     Transcoder<String> t = new TestTranscoder();
     assertEquals(0, client.getBulk(t, "test1", "test2", "test3").size());

@@ -46,6 +46,7 @@ import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.ops.VBucketAware;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.protocol.binary.MultiGetOperationImpl;
+import net.spy.memcached.protocol.binary.MultiGetsOperationImpl;
 import net.spy.memcached.protocol.binary.TapAckOperationImpl;
 import net.spy.memcached.util.StringUtils;
 
@@ -1324,6 +1325,11 @@ public class MemcachedConnection extends SpyThread implements ClusterConfigurati
 
     if (op instanceof MultiGetOperationImpl) {
       for (String key : ((MultiGetOperationImpl) op).getRetryKeys()) {
+        addOperation(key, opFact.get(key,
+          (GetOperation.Callback) op.getCallback()));
+      }
+    } else if (op instanceof MultiGetsOperationImpl) {
+      for (String key : ((MultiGetsOperationImpl) op).getRetryKeys()) {
         addOperation(key, opFact.get(key,
           (GetOperation.Callback) op.getCallback()));
       }
