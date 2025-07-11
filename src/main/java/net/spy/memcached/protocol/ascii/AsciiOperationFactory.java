@@ -126,6 +126,10 @@ public class AsciiOperationFactory extends BaseOperationFactory {
   public GetsOperation gets(String key, GetsOperation.Callback cb) {
     return new GetsOperationImpl(key, cb);
   }
+  
+  public GetsOperation gets(Collection<String> keys, GetsOperation.Callback cb) {
+    return new GetsOperationImpl(keys, cb);
+  }
 
   public StatsOperation keyStats(String key, Callback cb) {
     throw new UnsupportedOperationException("Key stats are not supported "
