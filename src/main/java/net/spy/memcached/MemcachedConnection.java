@@ -1104,12 +1104,20 @@ public class MemcachedConnection extends SpyThread implements ClusterConfigurati
           // Decrypt the next TLS data record to plain text data.
           ByteBuffer deBuf = node.decryptNextTLSDataRecord(rbuf);
           if (deBuf != null) {
-            synchronized(currentOp){
-              readBufferAndLogMetrics(currentOp, deBuf, node);
+            // Process ALL data in the decrypted buffer before decrypting next TLS record.
+            // This ensures that when one TLS record contains multiple memcached packets
+            // (common with stats operations), all packets are consumed before the next
+            // decryptNextTLSDataRecord() call.
+            while (deBuf.remaining() > 0 && currentOp != null) {
+              synchronized(currentOp){
+                readBufferAndLogMetrics(currentOp, deBuf, node);
+              }
+              currentOp = node.getCurrentReadOp();
             }
+          } else {
+            // BUFFER_UNDERFLOW: not enough encrypted data for a complete TLS record
+            break;
           }
-          currentOp = node.getCurrentReadOp();
-          break;
         }
       }
       if (isTlsMode) {
