@@ -38,6 +38,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 
 import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
 import net.spy.memcached.metrics.MetricCollector;
 import net.spy.memcached.metrics.MetricType;
 import net.spy.memcached.ops.Operation;
@@ -128,7 +129,13 @@ public interface ConnectionFactory {
    * @return the interval in milliseconds
    */
   long getDynamicModePollingInterval();
-  
+
+  /**
+   * The strategy used for selecting which endpoint to use when polling for cluster configuration.
+   * @return the configuration endpoint selection strategy
+   */
+  ConfigEndpointSelectionStrategy getConfigEndpointSelectionStrategy();
+
   /**
    * Get the operation timeout used by this connection.
    */

@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
+import net.spy.memcached.config.RoundRobinConfigEndpointSelectionStrategy;
 import net.spy.memcached.metrics.DefaultMetricCollector;
 import net.spy.memcached.metrics.MetricCollector;
 import net.spy.memcached.metrics.MetricType;
@@ -213,6 +215,10 @@ public class DefaultConnectionFactory extends SpyObject implements
 
   public long getDynamicModePollingInterval(){
     return ConfigurationPoller.DEFAULT_POLL_INTERVAL;
+  }
+
+  public ConfigEndpointSelectionStrategy getConfigEndpointSelectionStrategy() {
+    return new RoundRobinConfigEndpointSelectionStrategy();
   }
 
   public MemcachedNode createMemcachedNode(SocketAddress sa, SocketChannel c,

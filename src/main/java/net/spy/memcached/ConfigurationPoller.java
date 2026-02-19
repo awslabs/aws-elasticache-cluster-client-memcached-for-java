@@ -7,10 +7,8 @@ package net.spy.memcached;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -20,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 import net.spy.memcached.compat.SpyThread;
 import net.spy.memcached.config.ClusterConfiguration;
 import net.spy.memcached.config.ClusterConfigurationObserver;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
+import net.spy.memcached.config.RoundRobinConfigEndpointSelectionStrategy;
 import net.spy.memcached.config.NodeEndPoint;
 import net.spy.memcached.ops.ConfigurationType;
 import net.spy.memcached.transcoders.SerializingTranscoder;
@@ -46,21 +46,23 @@ public class ConfigurationPoller extends SpyThread{
   private ClusterConfiguration currentClusterConfiguration;
   //The transcoder used for config.
   private Transcoder<Object> configTranscoder = new SerializingTranscoder();
-  private int currentIndex = 0;
   private Date date = new Date();
   private long lastSuccessfulPoll = date.getTime(); 
   private int pollingErrorCount = 0;
+  private final ConfigEndpointSelectionStrategy configEndpointSelectionStrategy;
   
   //The executor is used to keep the task and it's execution independent. The scheduled thread polls takes care of 
   //the periodic polling.
   private ScheduledThreadPoolExecutor scheduledExecutor;
   
   public ConfigurationPoller(final MemcachedClient client){
-    this(client, DEFAULT_POLL_INTERVAL, false);
+    this(client, DEFAULT_POLL_INTERVAL, false, new RoundRobinConfigEndpointSelectionStrategy());
   }
   
-  public ConfigurationPoller(final MemcachedClient client, long pollingInterval, final boolean useDaemonThreads){
+  public ConfigurationPoller(final MemcachedClient client, long pollingInterval, final boolean useDaemonThreads,
+                             final ConfigEndpointSelectionStrategy configEndpointSelectionStrategy){
     this.client = client;
+    this.configEndpointSelectionStrategy = configEndpointSelectionStrategy;
     this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
 		@Override
 		public Thread newThread(Runnable runnable) {
@@ -90,21 +92,8 @@ public class ConfigurationPoller extends SpyThread{
     try{
       getLogger().info("Starting configuration poller.");
       String newConfigResponse = null;
-      NodeEndPoint endpointToGetConfig = null;
-    
-      Collection<NodeEndPoint> endpoints = client.getAvailableNodeEndPoints();
-      if(endpoints.isEmpty()){
-        //If no nodes are available status, then get all the endpoints. This provides an 
-        //oppurtunity to re-resolve the hostname by recreating InetSocketAddress instance in "NodeEndPoint".getInetSocketAddress().
-        endpoints = client.getAllNodeEndPoints();
-      }
-      currentIndex = (currentIndex+1)%endpoints.size();
-      Iterator<NodeEndPoint> iterator = endpoints.iterator();
-      for(int i =0;i<currentIndex;i++){
-        iterator.next();
-      }
+      NodeEndPoint endpointToGetConfig = configEndpointSelectionStrategy.getConfigEndpoint(client);
       
-      endpointToGetConfig = iterator.next();
       InetSocketAddress socketAddressToGetConfig = endpointToGetConfig.getInetSocketAddress();
       
       getLogger().info("Endpoint to use for configuration access in this poll " + endpointToGetConfig.toString());
