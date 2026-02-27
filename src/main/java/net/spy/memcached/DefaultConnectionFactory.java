@@ -138,6 +138,7 @@ public class DefaultConnectionFactory extends SpyObject implements
   protected final int opQueueLen;
   private final int readBufSize;
   private final HashAlgorithm hashAlg;
+  private final ConfigEndpointSelectionStrategy configEndpointSelectionStrategy;
 
   private MetricCollector metrics;
 
@@ -164,6 +165,7 @@ public class DefaultConnectionFactory extends SpyObject implements
     this.readBufSize = bufSize;
     this.hashAlg = hash;
     this.metrics = null;
+    this.configEndpointSelectionStrategy = new RoundRobinConfigEndpointSelectionStrategy();
   }
 
   /**
@@ -218,7 +220,7 @@ public class DefaultConnectionFactory extends SpyObject implements
   }
 
   public ConfigEndpointSelectionStrategy getConfigEndpointSelectionStrategy() {
-    return new RoundRobinConfigEndpointSelectionStrategy();
+    return configEndpointSelectionStrategy;
   }
 
   public MemcachedNode createMemcachedNode(SocketAddress sa, SocketChannel c,

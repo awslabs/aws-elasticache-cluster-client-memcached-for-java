@@ -199,7 +199,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   //OperationNotSupportedException is thrown.
   private boolean isConfigurationProtocolSupported = true;
   
-  //This is used to dynamic mode to track whether the client is initialized with set of cache nodes for the first time.
+  // This is used in dynamic mode to track whether the client is initialized with a set of cache nodes for the first time.
   private boolean isConfigurationInitialized = false;
   
   private Transcoder<Object> configTranscoder = new SerializingTranscoder();
@@ -1296,7 +1296,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       }
     });
     rv.setOperation(op);
-    mconn.enqueueOperation(sa, op);
+    configEndpointSelectionStrategy.getConfigConnection().enqueueOperation(sa, op);
     
     return rv;
   }

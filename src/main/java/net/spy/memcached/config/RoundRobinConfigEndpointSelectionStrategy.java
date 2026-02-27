@@ -1,7 +1,7 @@
 package net.spy.memcached.config;
 
 import net.spy.memcached.ConnectionFactory;
-import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.MemcachedClientIF;
 import net.spy.memcached.MemcachedConnection;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ public class RoundRobinConfigEndpointSelectionStrategy implements ConfigEndpoint
     private MemcachedConnection configurationConnection;
 
     @Override
-    public NodeEndPoint getConfigEndpoint(MemcachedClient client) {
+    public NodeEndPoint getConfigEndpoint(MemcachedClientIF client) {
         Collection<NodeEndPoint> endpoints = client.getAvailableNodeEndPoints();
         if (endpoints.isEmpty()) {
             //If no nodes are available status, then get all the endpoints. This provides an
@@ -36,6 +36,7 @@ public class RoundRobinConfigEndpointSelectionStrategy implements ConfigEndpoint
      * `getConfigConnection` is called
      *
      */
+    @Override
     public MemcachedConnection setupMemcachedConnection(ConnectionFactory cf, List<InetSocketAddress> addrs) throws IOException {
         configurationConnection = cf.createConnection(addrs);
         return configurationConnection;

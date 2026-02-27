@@ -1,7 +1,7 @@
 package net.spy.memcached.config;
 
 import net.spy.memcached.ConnectionFactory;
-import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.MemcachedClientIF;
 import net.spy.memcached.MemcachedConnection;
 
 import java.io.IOException;
@@ -16,16 +16,16 @@ import java.util.List;
 public interface ConfigEndpointSelectionStrategy {
     /**
      * An endpoint is different from a connection;
-     * A connection can may be composed of several endpoints
+     * A connection could be composed of several endpoints
      */
-    NodeEndPoint getConfigEndpoint(MemcachedClient client);
+    NodeEndPoint getConfigEndpoint(MemcachedClientIF client);
     /**
       * Delegate the responsibility of setting up a memcached connection to this class
-      * as depending on strategy, a copy of this memcached connection may be required
+      * as, depending on the strategy, a copy of this memcached connection may be required
       * to be created and kept alive
       * @param cf connection factory used to build the Memcached connection
-      * @param addrs list of addresses that the connection factory should initialise connections with
-      * @return a Memcached connection in which memcached operations will be enqueued to
+      * @param addrs list of addresses that the connection factory should initialize connections with
+      * @return a Memcached connection to enqueue operations
       * @throws IOException
       */
     MemcachedConnection setupMemcachedConnection(ConnectionFactory cf, List<InetSocketAddress> addrs) throws IOException;
