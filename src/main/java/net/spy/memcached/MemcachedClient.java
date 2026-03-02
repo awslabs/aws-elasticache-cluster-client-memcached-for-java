@@ -33,6 +33,7 @@ import net.spy.memcached.auth.AuthThreadMonitor;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.config.ClusterConfiguration;
 import net.spy.memcached.ConfigurationPoller;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
 import net.spy.memcached.config.NodeEndPoint;
 import net.spy.memcached.internal.BulkFuture;
 import net.spy.memcached.internal.BulkGetFuture;
@@ -191,12 +192,14 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
   protected final ExecutorService executorService;
 
+  protected final ConfigEndpointSelectionStrategy configEndpointSelectionStrategy;
+
   private NodeEndPoint configurationNode;
   //Set default value to true to attempt config API first. The value is set to false if
   //OperationNotSupportedException is thrown.
   private boolean isConfigurationProtocolSupported = true;
   
-  //This is used to dynamic mode to track whether the client is initialized with set of cache nodes for the first time.
+  // This is used in dynamic mode to track whether the client is initialized with a set of cache nodes for the first time.
   private boolean isConfigurationInitialized = false;
   
   private Transcoder<Object> configTranscoder = new SerializingTranscoder();
@@ -290,6 +293,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     authDescriptor = cf.getAuthDescriptor();
     executorService = cf.getListenerExecutorService();
 
+    configEndpointSelectionStrategy = cf.getConfigEndpointSelectionStrategy();
+
     if(clientMode == ClientMode.Dynamic){
       initializeClientUsingConfigEndPoint(cf, addrs.get(0));
     } else {
@@ -352,14 +357,14 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     }
     
     //Initialize and start the poller.
-    configPoller = new ConfigurationPoller(this, cf.getDynamicModePollingInterval(), cf.isDaemon());
+    configPoller = new ConfigurationPoller(this, cf.getDynamicModePollingInterval(), cf.isDaemon(), configEndpointSelectionStrategy);
     configPoller.subscribeForClusterConfiguration(mconn);
   }
 
   private void setupConnection(ConnectionFactory cf, List<InetSocketAddress> addrs)
     throws IOException {
 
-    mconn = cf.createConnection(addrs);
+    mconn = configEndpointSelectionStrategy.setupMemcachedConnection(cf, addrs);
     assert mconn != null : "Connection factory failed to make a connection";
   }
   
@@ -1291,7 +1296,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       }
     });
     rv.setOperation(op);
-    mconn.enqueueOperation(sa, op);
+    configEndpointSelectionStrategy.getConfigConnection().enqueueOperation(sa, op);
     
     return rv;
   }
@@ -1996,7 +2001,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       }
     });
     rv.setOperation(op);
-    mconn.enqueueOperation(addr, op);
+    configEndpointSelectionStrategy.getConfigConnection().enqueueOperation(addr, op);
     return rv;
   }
   
@@ -2046,7 +2051,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
             }
           });
     rv.setOperation(op);
-    mconn.enqueueOperation(addr, op);
+    configEndpointSelectionStrategy.getConfigConnection().enqueueOperation(addr, op);
     return rv;
   }
 
@@ -2073,7 +2078,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       }
     });
     rv.setOperation(op);
-    mconn.enqueueOperation(addr, op);
+    configEndpointSelectionStrategy.getConfigConnection().enqueueOperation(addr, op);
     return rv;
   }
 
@@ -2988,6 +2993,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         mconn.setName(baseName + " - SHUTTING DOWN (telling client)");
         mconn.shutdown();
         mconn.setName(baseName + " - SHUTTING DOWN (informed client)");
+        configEndpointSelectionStrategy.shutdownConfigConnection();
         tcService.shutdown();
         //terminate all pending Auth Threads
         authMonitor.interruptAllPendingAuth();

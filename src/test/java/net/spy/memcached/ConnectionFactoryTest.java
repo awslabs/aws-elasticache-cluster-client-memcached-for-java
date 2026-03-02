@@ -28,6 +28,7 @@
 package net.spy.memcached;
 
 import junit.framework.TestCase;
+import net.spy.memcached.config.RoundRobinConfigEndpointSelectionStrategy;
 
 /**
  * Test connection factory variations.
@@ -55,5 +56,10 @@ public class ConnectionFactoryTest extends TestCase {
         .remainingCapacity());
     assertEquals(Integer.MAX_VALUE, cf.createReadOperationQueue()
         .remainingCapacity());
+  }
+
+  public void testDefaultConfigEndpointSelectionStrategy() {
+    DefaultConnectionFactory cf = new DefaultConnectionFactory();
+    assertTrue(cf.getConfigEndpointSelectionStrategy() instanceof RoundRobinConfigEndpointSelectionStrategy);
   }
 }

@@ -38,6 +38,8 @@ import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.PlainCallbackHandler;
 import net.spy.memcached.compat.BaseMockCase;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
+import net.spy.memcached.config.RoundRobinConfigEndpointSelectionStrategy;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
@@ -106,6 +108,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
         DefaultConnectionFactory.DEFAULT_OP_QUEUE_MAX_BLOCK_TIME);
     assertEquals(f.getAuthWaitTime(),
       DefaultConnectionFactory.DEFAULT_AUTH_WAIT_TIME);
+    assertTrue(f.getConfigEndpointSelectionStrategy() instanceof RoundRobinConfigEndpointSelectionStrategy);
   }
 
   public void testModifications() throws Exception {
@@ -200,6 +203,13 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     factory = b.build();
     assertFalse(factory.isDefaultExecutorService());
     assertEquals(service.hashCode(), factory.getListenerExecutorService().hashCode());
+  }
+
+  public void testSetConfigEndpointSelectionStrategy() {
+    ConfigEndpointSelectionStrategy strategy = (ConfigEndpointSelectionStrategy) mock(ConfigEndpointSelectionStrategy.class).proxy();
+    b.setConfigEndpointSelectionStrategy(strategy);
+    ConnectionFactory f = b.build();
+    assertSame(strategy, f.getConfigEndpointSelectionStrategy());
   }
 
   static class DirectFactory implements OperationQueueFactory {

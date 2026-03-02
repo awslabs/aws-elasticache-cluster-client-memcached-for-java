@@ -35,6 +35,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 
 import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
 import net.spy.memcached.metrics.MetricCollector;
 import net.spy.memcached.metrics.MetricType;
 import net.spy.memcached.ops.Operation;
@@ -57,7 +58,9 @@ public class ConnectionFactoryBuilder {
   protected Transcoder<Object> transcoder;
 
   protected ClientMode clientMode;
-  
+
+  protected ConfigEndpointSelectionStrategy configEndpointSelectionStrategy;
+
   protected FailureMode failureMode;
 
   protected Collection<ConnectionObserver> initialObservers =
@@ -121,6 +124,7 @@ public class ConnectionFactoryBuilder {
     setSSLContext(cf.getSSLContext());
     setHostnameForTlsVerification(cf.getHostnameForTlsVerification());
     setSkipTlsHostnameVerification(cf.skipTlsHostnameVerification());
+    setConfigEndpointSelectionStrategy(cf.getConfigEndpointSelectionStrategy());
   }
 
   /**
@@ -130,6 +134,11 @@ public class ConnectionFactoryBuilder {
    */
   public ConnectionFactoryBuilder setClientMode(ClientMode clientMode){
     this.clientMode = clientMode;
+    return this;
+  }
+
+  public ConnectionFactoryBuilder setConfigEndpointSelectionStrategy(ConfigEndpointSelectionStrategy configEndpointSelectionStrategy){
+    this.configEndpointSelectionStrategy = configEndpointSelectionStrategy;
     return this;
   }
 
@@ -387,6 +396,13 @@ public class ConnectionFactoryBuilder {
       @Override
       public ClientMode getClientMode(){
         return clientMode == null ? super.getClientMode() : clientMode;
+      }
+
+      @Override
+      public ConfigEndpointSelectionStrategy getConfigEndpointSelectionStrategy() {
+        return configEndpointSelectionStrategy == null
+          ? super.getConfigEndpointSelectionStrategy()
+          : configEndpointSelectionStrategy;
       }
       
       @Override

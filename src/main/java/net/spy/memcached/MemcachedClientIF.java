@@ -101,6 +101,16 @@ public interface MemcachedClientIF {
 
   Future<Boolean> replace(String key, int exp, Object o);
 
+  /**
+   * @return point-in-time view of currently available servers
+   */
+  Collection<net.spy.memcached.config.NodeEndPoint> getAvailableNodeEndPoints();
+
+  /**
+   * @return point-in-time view of all servers
+   */
+  Collection<net.spy.memcached.config.NodeEndPoint> getAllNodeEndPoints();
+
   <T> Future<T> asyncGet(String key, Transcoder<T> tc);
 
   Future<Object> asyncGet(String key);
