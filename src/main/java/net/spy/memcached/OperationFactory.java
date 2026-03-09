@@ -192,6 +192,15 @@ public interface OperationFactory {
    * @return a new GetsOperation
    */
   GetsOperation gets(String key, GetsOperation.Callback callback);
+  
+  /**
+   * Get a gets operation for multiple keys.
+   *
+   * @param keys the keys to get
+   * @param cb the callback that will contain the results
+   * @return the GetsOperation
+   */
+  GetsOperation gets(Collection<String> keys, GetsOperation.Callback cb);
 
   /**
    * Create a get operation.
