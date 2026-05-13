@@ -293,7 +293,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     authDescriptor = cf.getAuthDescriptor();
     executorService = cf.getListenerExecutorService();
 
-    configEndpointSelectionStrategy = cf.getConfigEndpointSelectionStrategy();
+    configEndpointSelectionStrategy = cf.getConfigEndpointSelectionStrategyFactory().create();
 
     if(clientMode == ClientMode.Dynamic){
       initializeClientUsingConfigEndPoint(cf, addrs.get(0));

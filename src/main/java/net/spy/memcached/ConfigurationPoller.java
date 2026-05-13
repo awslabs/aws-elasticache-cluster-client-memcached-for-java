@@ -51,7 +51,7 @@ public class ConfigurationPoller extends SpyThread{
   private int pollingErrorCount = 0;
   private final ConfigEndpointSelectionStrategy configEndpointSelectionStrategy;
   
-  //The executor is used to keep the task and it's execution independent. The scheduled thread polls takes care of 
+  //The executor is used to keep the task and it's execution independent. The scheduled thread polls takes care of
   //the periodic polling.
   private ScheduledThreadPoolExecutor scheduledExecutor;
   

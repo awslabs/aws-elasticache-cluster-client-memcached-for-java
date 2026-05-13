@@ -39,6 +39,7 @@ import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.PlainCallbackHandler;
 import net.spy.memcached.compat.BaseMockCase;
 import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategyFactory;
 import net.spy.memcached.config.RoundRobinConfigEndpointSelectionStrategy;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationQueueFactory;
@@ -48,6 +49,7 @@ import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 import net.spy.memcached.transcoders.WhalinTranscoder;
+import org.jmock.Mock;
 
 /**
  * Test the connection factory builder.
@@ -108,7 +110,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
         DefaultConnectionFactory.DEFAULT_OP_QUEUE_MAX_BLOCK_TIME);
     assertEquals(f.getAuthWaitTime(),
       DefaultConnectionFactory.DEFAULT_AUTH_WAIT_TIME);
-    assertTrue(f.getConfigEndpointSelectionStrategy() instanceof RoundRobinConfigEndpointSelectionStrategy);
+    assertTrue(f.getConfigEndpointSelectionStrategyFactory().create() instanceof RoundRobinConfigEndpointSelectionStrategy);
   }
 
   public void testModifications() throws Exception {
@@ -205,11 +207,37 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     assertEquals(service.hashCode(), factory.getListenerExecutorService().hashCode());
   }
 
-  public void testSetConfigEndpointSelectionStrategy() {
-    ConfigEndpointSelectionStrategy strategy = (ConfigEndpointSelectionStrategy) mock(ConfigEndpointSelectionStrategy.class).proxy();
-    b.setConfigEndpointSelectionStrategy(strategy);
+  public void testSetConfigEndpointSelectionStrategyFactory() {
+    // A factory that records how many strategies it produced and always returns a brand new instance
+    final int[] created = {0};
+    ConfigEndpointSelectionStrategyFactory factory =
+      new ConfigEndpointSelectionStrategyFactory() {
+        @Override
+        public ConfigEndpointSelectionStrategy create() {
+          created[0]++;
+          return new RoundRobinConfigEndpointSelectionStrategy();
+        }
+      };
+    b.setConfigEndpointSelectionStrategyFactory(factory);
     ConnectionFactory f = b.build();
-    assertSame(strategy, f.getConfigEndpointSelectionStrategy());
+
+    ConfigEndpointSelectionStrategy first = f.getConfigEndpointSelectionStrategyFactory().create();
+    ConfigEndpointSelectionStrategy second = f.getConfigEndpointSelectionStrategyFactory().create();
+
+    // The configured factory is used...
+    assertTrue(first instanceof RoundRobinConfigEndpointSelectionStrategy);
+    // ...and each client gets its own fresh strategy (no shared state).
+    assertNotSame(first, second);
+    assertEquals(2, created[0]);
+  }
+
+  public void testDefaultConfigEndpointSelectionStrategyIsFreshPerClient() {
+    // With no factory configured, the default must still produce a fresh
+    // strategy per client so that per-client state is not shared.
+    ConnectionFactory f = b.build();
+    ConfigEndpointSelectionStrategy first = f.getConfigEndpointSelectionStrategyFactory().create();
+    ConfigEndpointSelectionStrategy second = f.getConfigEndpointSelectionStrategyFactory().create();
+    assertNotSame(first, second);
   }
 
   static class DirectFactory implements OperationQueueFactory {

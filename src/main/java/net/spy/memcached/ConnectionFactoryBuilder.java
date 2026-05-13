@@ -35,7 +35,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 
 import net.spy.memcached.auth.AuthDescriptor;
-import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategyFactory;
 import net.spy.memcached.metrics.MetricCollector;
 import net.spy.memcached.metrics.MetricType;
 import net.spy.memcached.ops.Operation;
@@ -59,7 +59,7 @@ public class ConnectionFactoryBuilder {
 
   protected ClientMode clientMode;
 
-  protected ConfigEndpointSelectionStrategy configEndpointSelectionStrategy;
+  protected ConfigEndpointSelectionStrategyFactory configEndpointSelectionStrategyFactory;
 
   protected FailureMode failureMode;
 
@@ -124,7 +124,7 @@ public class ConnectionFactoryBuilder {
     setSSLContext(cf.getSSLContext());
     setHostnameForTlsVerification(cf.getHostnameForTlsVerification());
     setSkipTlsHostnameVerification(cf.skipTlsHostnameVerification());
-    setConfigEndpointSelectionStrategy(cf.getConfigEndpointSelectionStrategy());
+    setConfigEndpointSelectionStrategyFactory(cf.getConfigEndpointSelectionStrategyFactory());
   }
 
   /**
@@ -137,8 +137,16 @@ public class ConnectionFactoryBuilder {
     return this;
   }
 
-  public ConnectionFactoryBuilder setConfigEndpointSelectionStrategy(ConfigEndpointSelectionStrategy configEndpointSelectionStrategy){
-    this.configEndpointSelectionStrategy = configEndpointSelectionStrategy;
+  /**
+   * Configure the factory used to create a {@code ConfigEndpointSelectionStrategy}
+   * for each client.
+   *
+   * @param configEndpointSelectionStrategyFactory factory producing fresh strategies
+   * @return this builder
+   */
+  public ConnectionFactoryBuilder setConfigEndpointSelectionStrategyFactory(
+      ConfigEndpointSelectionStrategyFactory configEndpointSelectionStrategyFactory){
+    this.configEndpointSelectionStrategyFactory = configEndpointSelectionStrategyFactory;
     return this;
   }
 
@@ -399,12 +407,12 @@ public class ConnectionFactoryBuilder {
       }
 
       @Override
-      public ConfigEndpointSelectionStrategy getConfigEndpointSelectionStrategy() {
-        return configEndpointSelectionStrategy == null
-          ? super.getConfigEndpointSelectionStrategy()
-          : configEndpointSelectionStrategy;
+      public ConfigEndpointSelectionStrategyFactory getConfigEndpointSelectionStrategyFactory() {
+        return configEndpointSelectionStrategyFactory == null
+          ? super.getConfigEndpointSelectionStrategyFactory()
+          : configEndpointSelectionStrategyFactory;
       }
-      
+
       @Override
       public BlockingQueue<Operation> createOperationQueue() {
         return opQueueFactory == null ? super.createOperationQueue()

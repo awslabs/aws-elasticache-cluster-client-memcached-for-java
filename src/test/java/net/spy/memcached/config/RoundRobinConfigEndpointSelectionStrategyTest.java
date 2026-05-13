@@ -3,14 +3,13 @@ package net.spy.memcached.config;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Collection;
 
+import net.spy.memcached.DefaultConnectionFactory;
+import net.spy.memcached.MemcachedClientIF;
+import net.spy.memcached.MemcachedConnection;
 import net.spy.memcached.UnitTestConfig;
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
-import net.spy.memcached.MemcachedClientIF;
-import net.spy.memcached.MemcachedConnection;
-import net.spy.memcached.DefaultConnectionFactory;
 
 import static net.spy.memcached.UnitTestConfig.PORT_NUMBER;
 
@@ -57,7 +56,7 @@ public class RoundRobinConfigEndpointSelectionStrategyTest extends MockObjectTes
 
         // Should fall back to allEndpoints and start at (0 + 1) % 2 = 1
         assertEquals("host2", strategy.getConfigEndpoint(client).getHostName());
-        
+
         // Reset or just expect another call if we want to test next element
         clientMock.expects(once()).method("getAvailableNodeEndPoints").will(returnValue(availableEndpoints));
         clientMock.expects(once()).method("getAllNodeEndPoints").will(returnValue(allEndpoints));
@@ -72,5 +71,7 @@ public class RoundRobinConfigEndpointSelectionStrategyTest extends MockObjectTes
         MemcachedConnection conn = strategy.setupMemcachedConnection(cf, addrs);
         assertNotNull(conn);
         assertSame(conn, strategy.getConfigConnection());
+        conn.shutdown();
     }
+
 }
