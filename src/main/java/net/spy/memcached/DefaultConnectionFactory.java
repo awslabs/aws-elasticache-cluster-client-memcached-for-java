@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategyFactory;
 import net.spy.memcached.config.RoundRobinConfigEndpointSelectionStrategy;
 import net.spy.memcached.metrics.DefaultMetricCollector;
 import net.spy.memcached.metrics.MetricCollector;
@@ -138,7 +139,6 @@ public class DefaultConnectionFactory extends SpyObject implements
   protected final int opQueueLen;
   private final int readBufSize;
   private final HashAlgorithm hashAlg;
-  private final ConfigEndpointSelectionStrategy configEndpointSelectionStrategy;
 
   private MetricCollector metrics;
 
@@ -165,7 +165,6 @@ public class DefaultConnectionFactory extends SpyObject implements
     this.readBufSize = bufSize;
     this.hashAlg = hash;
     this.metrics = null;
-    this.configEndpointSelectionStrategy = new RoundRobinConfigEndpointSelectionStrategy();
   }
 
   /**
@@ -219,8 +218,13 @@ public class DefaultConnectionFactory extends SpyObject implements
     return ConfigurationPoller.DEFAULT_POLL_INTERVAL;
   }
 
-  public ConfigEndpointSelectionStrategy getConfigEndpointSelectionStrategy() {
-    return configEndpointSelectionStrategy;
+  public ConfigEndpointSelectionStrategyFactory getConfigEndpointSelectionStrategyFactory() {
+    return new ConfigEndpointSelectionStrategyFactory() {
+      @Override
+      public ConfigEndpointSelectionStrategy create() {
+        return new RoundRobinConfigEndpointSelectionStrategy();
+      }
+    };
   }
 
   public MemcachedNode createMemcachedNode(SocketAddress sa, SocketChannel c,

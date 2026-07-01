@@ -27,7 +27,13 @@
 
 package net.spy.memcached;
 
+import java.net.InetSocketAddress;
+import java.util.Collections;
+import java.util.List;
+
 import junit.framework.TestCase;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategy;
+import net.spy.memcached.config.ConfigEndpointSelectionStrategyFactory;
 import net.spy.memcached.config.RoundRobinConfigEndpointSelectionStrategy;
 
 /**
@@ -60,6 +66,46 @@ public class ConnectionFactoryTest extends TestCase {
 
   public void testDefaultConfigEndpointSelectionStrategy() {
     DefaultConnectionFactory cf = new DefaultConnectionFactory();
-    assertTrue(cf.getConfigEndpointSelectionStrategy() instanceof RoundRobinConfigEndpointSelectionStrategy);
+    assertTrue(cf.getConfigEndpointSelectionStrategyFactory().create() instanceof RoundRobinConfigEndpointSelectionStrategy);
   }
+
+  public void testStrategiesFromSameFactoryHaveIsolatedConnectionState()
+      throws Exception {
+    ConnectionFactory factory = new ConnectionFactoryBuilder()
+        .setConfigEndpointSelectionStrategyFactory(new ConfigEndpointSelectionStrategyFactory() {
+          @Override
+          public ConfigEndpointSelectionStrategy create() {
+            return new RoundRobinConfigEndpointSelectionStrategy();
+          }
+        })
+        .build();
+
+    ConfigEndpointSelectionStrategy strategyA =
+            factory.getConfigEndpointSelectionStrategyFactory().create();
+    ConfigEndpointSelectionStrategy strategyB =
+            factory.getConfigEndpointSelectionStrategyFactory().create();
+
+    assertNotSame(
+        "Two strategies from the same factory must be independent instances",
+        strategyA, strategyB);
+
+    List<InetSocketAddress> addrs =
+        Collections.singletonList(new InetSocketAddress(UnitTestConfig.IPV4_ADDR, UnitTestConfig.PORT_NUMBER));
+
+    MemcachedConnection connA = strategyA.setupMemcachedConnection(factory, addrs);
+    MemcachedConnection connB = strategyB.setupMemcachedConnection(factory, addrs);
+
+    // Each strategy must hold its own distinct connection object.
+    assertNotSame(
+        "Each strategy instance must hold its own connection. ",
+        connA, connB);
+
+    assertSame(connA, strategyA.getConfigConnection());
+    assertSame(connB, strategyB.getConfigConnection());
+
+    // Clean up
+    strategyA.shutdownConfigConnection();
+    strategyB.shutdownConfigConnection();
+  }
+
 }
