@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.AddrUtil;
+import net.spy.memcached.ClientMode;
 import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.ConnectionFactoryBuilder.Locator;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
@@ -181,6 +182,14 @@ public class MemcachedClientFactoryBean implements FactoryBean,
 
   public void setWriteOpQueueFactory(final OperationQueueFactory q) {
     connectionFactoryBuilder.setWriteOpQueueFactory(q);
+  }
+
+  /**
+   * Set the client mode. Defaults to Dynamic which enables Auto Discovery. Can also be set to Static which turns off
+   * Auto Discovery and has the same functionality as a classic SpyMemcached client.
+   */
+  public void setClientMode(final ClientMode clientMode) {
+    connectionFactoryBuilder.setClientMode(clientMode);
   }
 
   /**
