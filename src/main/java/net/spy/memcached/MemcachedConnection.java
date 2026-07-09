@@ -367,7 +367,7 @@ public class MemcachedConnection extends SpyThread implements ClusterConfigurati
     for(InetSocketAddress sa : socketAddressList){
       InetAddress addr = sa.getAddress();
       String ipAddress = (addr != null) ? addr.getHostAddress() : null;
-      NodeEndPoint endPoint = new NodeEndPoint(sa.getHostName(), ipAddress, sa.getPort());
+      NodeEndPoint endPoint = new NodeEndPoint(sa.getHostString(), ipAddress, sa.getPort());
       endPoints.add(endPoint);
     }
     
