@@ -36,18 +36,26 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
 
 import net.spy.memcached.categories.StandardTests;
 import net.spy.memcached.internal.GetFuture;
 import net.spy.memcached.internal.OperationFuture;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
+import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatusCode;
+import net.spy.memcached.protocol.binary.MultiGetsOperationImpl;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 
 import org.junit.Test;
@@ -90,6 +98,42 @@ public class BinaryClientTest extends ProtocolBaseCase {
   protected String getExpectedVersionSource() {
     return String.valueOf(new InetSocketAddress(TestConfig.IPV4_ADDR,
         TestConfig.PORT_NUMBER));
+  }
+
+  @Test
+  public void testGetsBulkRetryPreservesCAS() throws Exception {
+    final String key = "gets.bulk.retry";
+    final String value = "value";
+    assertTrue(client.set(key, 0, value).get());
+
+    final CountDownLatch completed = new CountDownLatch(1);
+    final AtomicReference<String> receivedValue = new AtomicReference<String>();
+    final AtomicLong receivedCas = new AtomicLong();
+    GetsOperation.Callback callback = new GetsOperation.Callback() {
+      @Override
+      public void gotData(String k, int flags, long cas, byte[] data) {
+        receivedValue.set(new String(data));
+        receivedCas.set(cas);
+      }
+
+      @Override
+      public void receivedStatus(OperationStatus status) {
+      }
+
+      @Override
+      public void complete() {
+        completed.countDown();
+      }
+    };
+
+    MultiGetsOperationImpl operation = new MultiGetsOperationImpl(
+        Collections.singleton(key), callback);
+    operation.getRetryKeys().add(key);
+    client.getConnection().redistributeOperation(operation);
+
+    assertTrue(completed.await(5, TimeUnit.SECONDS));
+    assertEquals(value, receivedValue.get());
+    assertTrue(receivedCas.get() > 0);
   }
 
   @Test

@@ -130,6 +130,10 @@ public class BinaryOperationFactory extends BaseOperationFactory {
   public GetsOperation gets(String key, GetsOperation.Callback cb) {
     return new GetsOperationImpl(key, cb);
   }
+  
+  public GetsOperation gets(Collection<String> keys, GetsOperation.Callback cb) {
+    return new MultiGetsOperationImpl(keys, cb);
+  }
 
   public StatsOperation keyStats(String key, StatsOperation.Callback cb) {
     return new KeyStatsOperationImpl(key, cb);
