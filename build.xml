@@ -129,9 +129,9 @@
   <property name="client.mode" value="Static"/>
   <property name="server.address_v4" value="127.0.0.1"/>
   <property name="server.address_v6" value="::1"/>
-  <property name="server.bin" value="/usr/bin/memcached"/>
+  <property name="server.bin" value="/Users/affonsov/dev/memcached/memcached"/>
   <property name="server.port_number" value="11211"/>
-  <property name="server.version" value="1.6.12"/>
+ <property name="server.version" value="1.4.5"/>
   <property name="test.type" value="unit"/>
   <property name="server.type" value="oss"/>
   <property name="cert.folder" value="not specified"/>
@@ -322,6 +322,7 @@
       <sysproperty key="client.mode" value="${client.mode}"/>
       <sysproperty key="server.bin" value="${server.bin}"/>
       <sysproperty key="server.type" value="${server.type}"/>
+      <sysproperty key="server.version" value="${server.version}"/>
       <sysproperty key="cert.folder" value="${cert.folder}"/>
       <sysproperty key="test.type" value="${test.type}"/>
       <formatter type="plain" usefile="false" />

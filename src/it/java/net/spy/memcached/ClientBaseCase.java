@@ -143,7 +143,7 @@ public abstract class ClientBaseCase {
 	if(!endpoints.isEmpty() && config != null) {
 	  ArrayList<MemcachedClient> clients = new ArrayList<MemcachedClient>();
       for (NodeEndPoint endpoint : endpoints) {
-        List<InetSocketAddress> addrs = AddrUtil.getAddresses(endpoint.getIpAddress());
+        List<InetSocketAddress> addrs = AddrUtil.getAddresses(endpoint.getIpAddress() + ":" + endpoint.getPort());
         MemcachedClient currentClient = staticMemcachedClient(addrs);
         currentClient.set(ConfigurationType.CLUSTER.getValueWithNameSpace(), 0, config);
         clients.add(currentClient);

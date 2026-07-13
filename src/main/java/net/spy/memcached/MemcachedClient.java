@@ -328,12 +328,23 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     setupConnection(cf, Collections.singletonList(configurationEndPoint));
     boolean checkKey = false;
     String configResult = null;
+
+    // If the server is known to be OSS (not ElastiCache), skip the config protocol entirely
+    // as it causes connection disruption when the server returns ERROR.
+    String serverType = System.getProperty("server.type", "");
+    if("oss".equals(serverType)){
+      isConfigurationProtocolSupported = false;
+      checkKey = true;
+    }
+
     try{
-      try{
-        //GetConfig
-        configResult = (String)this.getConfig(configurationEndPoint, ConfigurationType.CLUSTER, configTranscoder);
-      }catch(OperationNotSupportedException e){
-        checkKey = true;
+      if(!checkKey){
+        try{
+          //GetConfig
+          configResult = (String)this.getConfig(configurationEndPoint, ConfigurationType.CLUSTER, configTranscoder);
+        }catch(OperationNotSupportedException e){
+          checkKey = true;
+        }
       }
 
       if(checkKey || configResult == null || configResult.trim().isEmpty()){
