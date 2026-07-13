@@ -35,6 +35,7 @@ import net.spy.memcached.internal.OperationFuture;
 import net.spy.memcached.metrics.MetricCollector;
 import net.spy.memcached.metrics.MetricType;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
@@ -1338,8 +1339,8 @@ public class MemcachedConnection extends SpyThread implements ClusterConfigurati
       }
     } else if (op instanceof MultiGetsOperationImpl) {
       for (String key : ((MultiGetsOperationImpl) op).getRetryKeys()) {
-        addOperation(key, opFact.get(key,
-          (GetOperation.Callback) op.getCallback()));
+        addOperation(key, opFact.gets(key,
+          (GetsOperation.Callback) op.getCallback()));
       }
     } else if (op instanceof KeyedOperation) {
       KeyedOperation ko = (KeyedOperation) op;
