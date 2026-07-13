@@ -1638,6 +1638,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
+  @Override
   public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter,
       Iterator<Transcoder<T>> tcIter) {
     final Map<String, Future<CASValue<T>>> m = new ConcurrentHashMap<String, Future<CASValue<T>>>();
@@ -1798,6 +1799,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
+  @Override
   public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter,
       Transcoder<T> tc) {
     return asyncGetsBulk(keyIter,
@@ -1832,6 +1834,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
+  @Override
   public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keys,
       Transcoder<T> tc) {
     return asyncGetsBulk(keys.iterator(), tc);
@@ -1861,6 +1864,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
+  @Override
   public BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(
          Iterator<String> keyIter) {
     return asyncGetsBulk(keyIter, transcoder);
@@ -1889,6 +1893,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
+  @Override
   public BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Collection<String> keys) {
     return asyncGetsBulk(keys, transcoder);
   }
@@ -1919,6 +1924,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
+  @Override
   public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Transcoder<T> tc,
       String... keys) {
     return asyncGetsBulk(Arrays.asList(keys), tc);
@@ -1945,6 +1951,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
+  @Override
   public BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(String... keys) {
     return asyncGetsBulk(Arrays.asList(keys), transcoder);
   }
@@ -3475,4 +3482,3 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return connFactory.toString();
   }
 }
-
