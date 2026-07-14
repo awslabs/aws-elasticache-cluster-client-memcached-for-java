@@ -20,13 +20,16 @@ jobs:
           distribution: 'corretto'
 
       - name: Install Ant
-        run: sudo apt-get update && sudo apt-get install -y ant
+        run: sudo apt-get update && sudo apt-get install -y ant libevent-dev
 
-      - name: Install memcached
-        run: sudo apt-get install -y memcached
-
-      - name: Stop system memcached
-        run: sudo systemctl stop memcached || true
+      - name: Build memcached 1.6.44 from source
+        run: |
+          git clone --branch 1.6.44 --depth 1 https://github.com/memcached/memcached.git /tmp/memcached-build
+          cd /tmp/memcached-build
+          ./autogen.sh
+          ./configure
+          make -j$(nproc)
+          sudo make install
 
       - name: Build
         run: ant compile
@@ -42,7 +45,7 @@ jobs:
           path: build/junit/
 
       - name: Run Static integration tests
-        run: ant it -Dclient.mode=Static -Dserver.bin=/usr/bin/memcached
+        run: ant it -Dclient.mode=Static -Dserver.bin=/usr/local/bin/memcached
 
       - name: Upload integration test reports
         if: always()
