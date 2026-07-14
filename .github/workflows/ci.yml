@@ -25,6 +25,9 @@ jobs:
       - name: Install memcached
         run: sudo apt-get install -y memcached
 
+      - name: Stop system memcached
+        run: sudo systemctl stop memcached || true
+
       - name: Build
         run: ant compile
 
