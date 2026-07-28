@@ -29,6 +29,7 @@ import net.spy.memcached.MemcachedConnection;
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.OperationFactory;
 import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 
 /**
  * This will ensure no more than one AuthThread will exist for a given
@@ -36,10 +37,10 @@ import net.spy.memcached.compat.SpyObject;
  */
 public class AuthThreadMonitor extends SpyObject {
 
-  private final Map<Object, AuthThread> nodeMap;
+  private final Map<Object, Thread> nodeMap;
 
   public AuthThreadMonitor() {
-    nodeMap = new HashMap<Object, AuthThread>();
+    nodeMap = new HashMap<Object, Thread>();
   }
 
   /**
@@ -58,20 +59,21 @@ public class AuthThreadMonitor extends SpyObject {
       OperationFactory opFact, AuthDescriptor authDescriptor,
       MemcachedNode node) {
     interruptOldAuth(node);
-    AuthThread newSASLAuthenticator =
-        new AuthThread(conn, opFact, authDescriptor, node);
-    nodeMap.put(node, newSASLAuthenticator);
+    Thread authenticator = opFact instanceof BinaryOperationFactory ?
+          new BinaryAuthThread(conn, opFact, authDescriptor, node) :
+          new AsciiAuthThread(conn, opFact, authDescriptor, node);
+    nodeMap.put(node, authenticator);
   }
 
   /**
-   * Interrupt all pending {@link AuthThread}s.
+   * Interrupt all pending {@link BinaryAuthThread}s.
    *
-   * While shutting down a connection, if there are any {@link AuthThread}s
+   * While shutting down a connection, if there are any {@link BinaryAuthThread}s
    * running, terminate them so that the java process can exit gracefully (
    * otherwise it will wait infinitely).
    */
   public synchronized void interruptAllPendingAuth(){
-    for (AuthThread toStop : nodeMap.values()) {
+    for (Thread toStop : nodeMap.values()) {
       if (toStop.isAlive()) {
         getLogger().warn("Connection shutdown in progress - interrupting "
           + "waiting authentication thread.");
@@ -81,7 +83,7 @@ public class AuthThreadMonitor extends SpyObject {
   }
 
   private void interruptOldAuth(MemcachedNode nodeToStop) {
-    AuthThread toStop = nodeMap.get(nodeToStop);
+    Thread toStop = nodeMap.get(nodeToStop);
     if (toStop != null) {
       if (toStop.isAlive()) {
         getLogger().warn(
@@ -99,7 +101,7 @@ public class AuthThreadMonitor extends SpyObject {
    * from anywhere else.
    * @return
    */
-  protected Map<Object, AuthThread> getNodeMap() {
+  protected Map<Object, Thread> getNodeMap() {
     return nodeMap;
   }
 }

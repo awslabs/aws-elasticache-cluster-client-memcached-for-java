@@ -41,7 +41,7 @@ import net.spy.memcached.ops.OperationStatus;
 /**
  * A thread that does SASL authentication.
  */
-public class AuthThread extends SpyThread {
+public class BinaryAuthThread extends SpyThread {
 
   /**
    * If a SASL step takes longer than this period in milliseconds, a warning
@@ -62,8 +62,8 @@ public class AuthThread extends SpyThread {
   private final OperationFactory opFact;
   private final MemcachedNode node;
 
-  public AuthThread(MemcachedConnection c, OperationFactory o,
-      AuthDescriptor a, MemcachedNode n) {
+  public BinaryAuthThread(MemcachedConnection c, OperationFactory o,
+                          AuthDescriptor a, MemcachedNode n) {
     conn = c;
     opFact = o;
     authDescriptor = a;
