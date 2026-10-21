@@ -18,7 +18,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,8 +31,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import junit.framework.TestCase;
 
@@ -156,17 +154,22 @@ public class TLSPartialRecordTest extends TestCase {
   }
 
   private void start(String protocol) throws Exception {
+    KeyStore keyStore = loadKeyStore();
     SSLContext serverContext = SSLContext.getInstance("TLS");
     KeyManagerFactory kmf =
         KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-    kmf.init(loadKeyStore(), STORE_PASS.toCharArray());
+    kmf.init(keyStore, STORE_PASS.toCharArray());
     serverContext.init(kmf.getKeyManagers(), null, null);
 
     server = new TlsMemcachedStub(serverContext, protocol);
     proxy = new RecordProxy(server.getPort());
 
+    // The client trusts only the stub's self-signed certificate.
+    TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+        TrustManagerFactory.getDefaultAlgorithm());
+    tmf.init(keyStore);
     SSLContext clientContext = SSLContext.getInstance("TLS");
-    clientContext.init(null, new TrustManager[] {new TrustAll()}, null);
+    clientContext.init(null, tmf.getTrustManagers(), null);
 
     ConnectionFactory cf = new ConnectionFactoryBuilder()
         .setClientMode(ClientMode.Static)
@@ -270,18 +273,6 @@ public class TLSPartialRecordTest extends TestCase {
       s.close();
     } catch (IOException e) {
       // ignore
-    }
-  }
-
-  private static class TrustAll implements X509TrustManager {
-    public void checkClientTrusted(X509Certificate[] chain, String authType) {
-    }
-
-    public void checkServerTrusted(X509Certificate[] chain, String authType) {
-    }
-
-    public X509Certificate[] getAcceptedIssuers() {
-      return new X509Certificate[0];
     }
   }
 
