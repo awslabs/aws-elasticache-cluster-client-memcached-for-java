@@ -1081,10 +1081,10 @@ public class MemcachedConnection extends SpyThread implements ClusterConfigurati
       currentOp = handleReadsWhenChannelEndOfStream(currentOp, node, rbuf);
     }
 
-    while (read > 0 || 
-        (isTlsMode && rbuf.position() > 0)) { // This condition is for handling large size encrypted data 
-                                              // received from server when TLS enabled. We need to compact() 
-                                              // rbuf after single decryptNextTLSDataRecord() action.
+    // In TLS mode the inner loop decrypts every complete record in rbuf; an
+    // incomplete trailing record stays in rbuf (after compact()) until the
+    // next readable event brings the rest of it.
+    while (read > 0) {
       getLogger().debug("Read %d bytes", read);
       rbuf.flip();
       while (rbuf.remaining() > 0) {
